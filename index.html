@@ -1,0 +1,72 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <title>Gestión de Competición CrossFit</title>
+    <link rel="stylesheet" href="style.css">
+    <meta charset="UTF-8">
+</head>
+<body>
+    <div class="container">
+        <h1>Tabla de Posiciones</h1>
+        <div class="login-container">
+            <button id="login-btn">Iniciar Sesión</button>
+        </div>
+
+        <div id="login-modal" class="modal">
+            <div class="modal-content">
+                <span class="close">&times;</span>
+                <h2>Iniciar Sesión</h2>
+                <input type="text" id="username" placeholder="Usuario">
+                <input type="password" id="password" placeholder="Contraseña">
+                <button id="login-submit">Iniciar Sesión</button>
+                <p id="login-error" class="error"></p>
+            </div>
+        </div>
+
+        <div id="admin-panel" class="hidden">
+            <h2>Panel de Administrador</h2>
+            <input type="text" id="team-name" placeholder="Nombre del Equipo">
+            <select id="team-category">
+                <option value="Principiante">Principiante</option>
+                <option value="Avanzado">Avanzado</option>
+            </select>
+            <button id="add-team">Agregar Equipo</button>
+            <button id="confirm-changes">Confirmar Cambios</button>
+        </div>
+
+        <h2>Principiantes</h2>
+        <table id="beginner-table">
+            <thead>
+                <tr>
+                    <th>Posición</th>
+                    <th>Equipo</th>
+                    <th>WOD 1</th>
+                    <th>WOD 2</th>
+                    <th>FINAL</th>
+                    <th>TOTAL</th>
+                    <th class="admin-col hidden">Acciones</th>
+                </tr>
+            </thead>
+            <tbody></tbody>
+        </table>
+
+        <h2>Avanzados</h2>
+        <table id="advanced-table">
+            <thead>
+                <tr>
+                    <th>Posición</th>
+                    <th>Equipo</th>
+                    <th>WOD 1</th>
+                    <th>WOD 2</th>
+                    <th>FINAL</th>
+                    <th>TOTAL</th>
+                    <th class="admin-col hidden">Acciones</th>
+                </tr>
+            </thead>
+            <tbody></tbody>
+        </table>
+    </div>
+
+    <script src="script.js"></script>
+</body>
+</html>
