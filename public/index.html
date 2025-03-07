@@ -1,0 +1,191 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Competencia CrossFit</title>
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet">
+    <link rel="stylesheet" href="style.css">
+</head>
+<body>
+    <div class="container" id="container" style="margin-top: 27%;">
+        <!-- Título centrado -->
+        <h2 id="titulo" class="text-center mb-4">Tabla de Posiciones</h2>
+
+        <!-- Botones para seleccionar categoría -->
+        <div class="text-center mb-4">
+            <button class="btn btn-neon" id="btn-principiantes">PRINCIPIANTES</button>
+            <button class="btn btn-neon" id="btn-avanzados">AVANZADOS</button>
+        </div>
+
+        <!-- Tablas ocultas inicialmente -->
+        <div class="row">
+            <!-- Tabla Principiantes -->
+            <div class="col-12 tabla-principiantes" style="display: none;">
+                <div class="tabla-contenedor">
+
+                <table class="table table-bordered">
+                    <thead>
+                        <tr>
+                            <th>P</th>
+                            <th>Equipo</th>
+                            <th>W1</th>
+                            <th>W2</th>
+                            <th>Final</th>
+                            <th>Total</th>
+                            
+                        </tr>
+                    </thead>
+                    <tbody id="tabla-principiantes"></tbody>
+                </table>
+                </div>
+            </div>
+
+            <!-- Tabla Avanzados -->
+            <div class="col-12 tabla-avanzados" style="display: none;">
+                <div class="tabla-contenedor">
+
+                <table class="table table-bordered">
+                    <thead>
+                        <tr>
+                            <th>P</th>
+                            <th>Equipo</th>
+                            <th>W1</th>
+                            <th>W2</th>
+                            <th>Final</th>
+                            <th>Total</th>
+                            
+                        </tr>
+                    </thead>
+                    <tbody id="tabla-avanzados"></tbody>
+                </table>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <div id="admin-panel" class="container mt-4 d-none">
+        <h2>Administrador</h2>
+        <form id="form-equipo">
+            <input type="text" id="nombre-equipo" placeholder="Nombre del equipo" required>
+            <select id="categoria-equipo">
+                <option value="principiantes">Principiantes</option>
+                <option value="avanzados">Avanzados</option>
+            </select>
+            <button type="submit" class="btn btn-primary">Agregar Equipo</button>
+        </form>
+    </div>
+
+    <script type="module">
+        import { initializeApp } from "https://www.gstatic.com/firebasejs/10.7.1/firebase-app.js";
+        import { getFirestore, collection, getDocs, addDoc, doc, updateDoc } from "https://www.gstatic.com/firebasejs/10.7.1/firebase-firestore.js";
+        const firebaseConfig = {
+            apiKey: "AIzaSyDidm4L55K8ykNswAduQpWW5RUgAr48sH8",
+            authDomain: "compebe-7efe6.firebaseapp.com",
+            databaseURL: "https://compebe-7efe6-default-rtdb.firebaseio.com",
+            projectId: "compebe-7efe6",
+            storageBucket: "compebe-7efe6.firebasestorage.app",
+            messagingSenderId: "995708963765",
+            appId: "1:995708963765:web:8701fa19936d57558ea7fc",
+            measurementId: "G-JHW8WYLSRF"
+        };
+
+        const app = initializeApp(firebaseConfig);
+        const db = getFirestore(app);
+
+        // Esperamos que la página esté completamente cargada
+        window.onload = function() {
+            const principiantesCollectionRef = collection(db, 'avanzados');
+
+const newDocuments = [
+  { final: 10, nombre: 'Juan', total: 20, wod1: 5, wod2: 15 },
+  { final: 12, nombre: 'Maria', total: 25, wod1: 8, wod2: 17 },
+  { final: 8, nombre: 'Pedro', total: 18, wod1: 4, wod2: 14 },
+  { final: 15, nombre: 'Ana', total: 30, wod1: 10, wod2: 20 },
+  { final: 9, nombre: 'Luis', total: 19, wod1: 6, wod2: 13 },
+  { final: 11, nombre: 'Sofia', total: 22, wod1: 7, wod2: 15 },
+  { final: 7, nombre: 'Carlos', total: 17, wod1: 3, wod2: 14 },
+  { final: 13, nombre: 'Laura', total: 27, wod1: 9, wod2: 18 },
+  { final: 14, nombre: 'Diego', total: 29, wod1: 11, wod2: 18 },
+  { final: 6, nombre: 'Elena', total: 16, wod1: 2, wod2: 14 },
+];
+
+Promise.all(
+  newDocuments.map((docData) => addDoc(principiantesCollectionRef, docData))
+)
+  .then((docRefs) => {
+    console.log('Documents added successfully:', docRefs);
+  })
+  .catch((error) => {
+    console.error('Error adding documents:', error);
+  });
+
+    // Inicialmente ocultar ambas tablas
+    document.querySelector('.tabla-principiantes').style.display = 'none';
+    document.querySelector('.tabla-avanzados').style.display = 'none';
+    
+    // Botón de Principiantes
+    document.getElementById('btn-principiantes').addEventListener('click', async () => {
+        // Actualizar el margen superior y ocultar el título
+       // document.querySelector('.container').style.marginTop = "-25%";
+        document.querySelector('h2').style.display = 'none'; // Ocultar título
+        
+        // Mostrar la tabla de principiantes
+        document.querySelector('.tabla-principiantes').style.display = 'block';
+        document.querySelector('.tabla-avanzados').style.display = 'none';
+        
+        // Marcar el botón de principiantes
+        document.getElementById('btn-principiantes').classList.add('active');
+        document.getElementById('btn-avanzados').classList.remove('active');
+
+        // Cargar datos de principiantes
+        const principiantes = await getDocs(collection(db, "principiantes"));
+        mostrarTabla("tabla-principiantes", principiantes);
+    });
+
+    // Botón de Avanzados
+    document.getElementById('btn-avanzados').addEventListener('click', async () => {
+        // Actualizar el margen superior y ocultar el título
+        //document.querySelector('.container').style.marginTop = "-25%";
+        document.querySelector('h2').style.display = 'none'; // Ocultar título
+        
+        // Mostrar la tabla de avanzados
+        document.querySelector('.tabla-avanzados').style.display = 'block';
+        document.querySelector('.tabla-principiantes').style.display = 'none';
+
+        // Marcar el botón de Avanzados
+        document.getElementById('btn-avanzados').classList.add('active');
+        document.getElementById('btn-principiantes').classList.remove('active');
+        
+        // Cargar datos de avanzados
+        const avanzados = await getDocs(collection(db, "avanzados"));
+        mostrarTabla("tabla-avanzados", avanzados);
+    });
+};
+
+// Función para mostrar los datos en la tabla
+function mostrarTabla(idTabla, snapshot) {
+    const tbody = document.getElementById(idTabla);
+    tbody.innerHTML = ""; // Limpiar el contenido de la tabla
+
+    const equipos = snapshot.docs.map(doc => ({ id: doc.id, ...doc.data() }));
+    equipos.sort((a, b) => b.total - a.total); // Ordenar los equipos por total
+
+    equipos.forEach((equipo, index) => {
+        const fila = `
+            <tr>
+                <td>${index + 1}</td>
+                <td>${equipo.nombre}</td>
+                <td contenteditable="false" data-id="${equipo.id}" data-field="wod1">${equipo.wod1}</td>
+                <td contenteditable="false" data-id="${equipo.id}" data-field="wod2">${equipo.wod2}</td>
+                <td contenteditable="false" data-id="${equipo.id}" data-field="final">${equipo.final}</td>
+                <td>${equipo.total}</td>
+            </tr>
+        `;
+        tbody.innerHTML += fila;
+    });
+}
+
+    </script>
+</body>
+</html>

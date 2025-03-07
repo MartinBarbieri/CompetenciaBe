@@ -1,134 +1,96 @@
-const loginBtn = document.getElementById('login-btn');
-const loginModal = document.getElementById('login-modal');
-const closeBtn = document.querySelector('.close');
-const loginSubmit = document.getElementById('login-submit');
-const usernameInput = document.getElementById('username');
-const passwordInput = document.getElementById('password');
-const loginError = document.getElementById('login-error');
-const adminPanel = document.getElementById('admin-panel');
-const addTeamBtn = document.getElementById('add-team');
-const teamNameInput = document.getElementById('team-name');
-const teamCategorySelect = document.getElementById('team-category');
-const beginnerTable = document.getElementById('beginner-table').getElementsByTagName('tbody')[0];
-const advancedTable = document.getElementById('advanced-table').getElementsByTagName('tbody')[0];
-const confirmChangesBtn = document.getElementById('confirm-changes');
-const clearDataBtn = document.createElement('button'); // Nuevo botón
+import { initializeApp } from "https://www.gstatic.com/firebasejs/10.7.1/firebase-app.js";
+import { getFirestore, collection, getDocs, addDoc, doc, updateDoc } from "https://www.gstatic.com/firebasejs/10.7.1/firebase-firestore.js";
+// Configuración de Firebase
+const firebaseConfig = {
+    apiKey: "AIzaSyDidm4L55K8ykNswAduQpWW5RUgAr48sH8",
+    authDomain: "compebe-7efe6.firebaseapp.com",
+    databaseURL: "https://compebe-7efe6-default-rtdb.firebaseio.com",
+    projectId: "compebe-7efe6",
+    storageBucket: "compebe-7efe6.firebasestorage.app",
+    messagingSenderId: "995708963765",
+    appId: "1:995708963765:web:8701fa19936d57558ea7fc",
+    measurementId: "G-JHW8WYLSRF"
+};
 
-let isLoggedIn = false;
-let teams = JSON.parse(localStorage.getItem('teams')) || [];
+firebase.initializeApp(firebaseConfig);
+const db = firebase.firestore();
 
-function saveTeams() {
-    localStorage.setItem('teams', JSON.stringify(teams));
-}
+// Login
+document.getElementById("btn-login").addEventListener("click", () => {
+    const usuario = prompt("Usuario:");
+    const contraseña = prompt("Contraseña:");
 
-function clearData() {
-    localStorage.removeItem('teams');
-    teams = [];
-    updateTables();
-}
-
-loginBtn.onclick = function() {
-    loginModal.style.display = 'block';
-}
-
-closeBtn.onclick = function() {
-    loginModal.style.display = 'none';
-}
-
-window.onclick = function(event) {
-    if (event.target == loginModal) {
-        loginModal.style.display = 'none';
-    }
-}
-
-loginSubmit.onclick = function() {
-    if (usernameInput.value === 'admin' && passwordInput.value === '1234') {
-        isLoggedIn = true;
-        loginModal.style.display = 'none';
-        adminPanel.classList.remove('hidden');
-        document.querySelectorAll('.admin-col').forEach(col => col.style.display = 'table-cell');
-
-        // Agregar el botón "Limpiar Datos"
-        clearDataBtn.textContent = 'Limpiar Datos';
-        clearDataBtn.onclick = clearData;
-        adminPanel.appendChild(clearDataBtn);
-
-        updateTables();
+    if (usuario === "admin" && contraseña === "1234") {
+        document.getElementById("admin-panel").classList.remove("d-none");
+        alert("Sesión iniciada.");
     } else {
-        loginError.textContent = 'Usuario o contraseña incorrectos.';
+        alert("Usuario o contraseña incorrectos.");
     }
+});
+
+// Agregar equipo
+document.getElementById("form-equipo").addEventListener("submit", async (e) => {
+    e.preventDefault();
+    const nombre = document.getElementById("nombre-equipo").value;
+    const categoria = document.getElementById("categoria-equipo").value;
+
+    await db.collection(categoria).add({
+        nombre,
+        wod1: 0,
+        wod2: 0,
+        final: 0,
+        total: 0
+    });
+
+    document.getElementById("form-equipo").reset();
+    cargarTabla();
+});
+
+// Cargar tabla
+async function cargarTabla() {
+    const principiantes = await db.collection("principiantes").get();
+    const avanzados = await db.collection("avanzados").get();
+
+    mostrarTabla("tabla-principiantes", principiantes);
+    mostrarTabla("tabla-avanzados", avanzados);
 }
 
-addTeamBtn.onclick = function() {
-    const teamName = teamNameInput.value;
-    const teamCategory = teamCategorySelect.value;
-    teams.push({ name: teamName, category: teamCategory, wod1: 0, wod2: 0, final: 0, total: 0 });
-    saveTeams();
-    updateTables();
-}
+function mostrarTabla(idTabla, snapshot) {
+    const tbody = document.getElementById(idTabla);
+    tbody.innerHTML = "";
 
-function updateTables() {
-    beginnerTable.innerHTML = '';
-    advancedTable.innerHTML = '';
+    const equipos = snapshot.docs.map(doc => ({ id: doc.id, ...doc.data() }));
+    equipos.sort((a, b) => b.total - a.total);
 
-    const sortedTeams = teams.slice().sort((a, b) => b.total - a.total);
-
-    sortedTeams.forEach((team, index) => {
-        team.total = team.wod1 + team.wod2 + team.final;
-        const row = document.createElement('tr');
-        row.innerHTML = `
-            <td>${index + 1}°</td>
-            <td>${team.name}</td>
-            <td class="wod1">${team.wod1}</td>
-            <td class="wod2">${team.wod2}</td>
-            <td class="final">${team.final}</td>
-            <td class="total">${team.total}</td>
-            <td class="admin-col">
-                <button onclick="editTeam('${team.name}')">Editar</button>
-            </td>
+    equipos.forEach((equipo, index) => {
+        const fila = `
+            <tr>
+                <td>${index + 1}</td>
+                <td>${equipo.nombre}</td>
+                <td contenteditable="true" data-id="${equipo.id}" data-field="wod1">${equipo.wod1}</td>
+                <td contenteditable="true" data-id="${equipo.id}" data-field="wod2">${equipo.wod2}</td>
+                <td contenteditable="true" data-id="${equipo.id}" data-field="final">${equipo.final}</td>
+                <td>${equipo.total}</td>
+                <td><button class="btn btn-success btn-sm guardar" data-id="${equipo.id}">Guardar</button></td>
+            </tr>
         `;
+        tbody.innerHTML += fila;
+    });
 
-        if (isLoggedIn) {
-            row.querySelector('.admin-col').style.display = 'table-cell';
-        }
+    document.querySelectorAll(".guardar").forEach(btn => {
+        btn.addEventListener("click", async (e) => {
+            const id = e.target.dataset.id;
+            const fila = e.target.closest("tr");
+            const wod1 = parseInt(fila.children[2].innerText);
+            const wod2 = parseInt(fila.children[3].innerText);
+            const final = parseInt(fila.children[4].innerText);
+            const total = wod1 + wod2 + final;
 
-        if (team.category === 'Principiante') {
-            beginnerTable.appendChild(row);
-        } else {
-            advancedTable.appendChild(row);
-        }
+            await db.collection(idTabla.includes("principiantes") ? "principiantes" : "avanzados").doc(id).update({ wod1, wod2, final, total });
+            cargarTabla();
+        });
     });
 }
 
-function editTeam(teamName) {
-    const team = teams.find(t => t.name === teamName);
-    if (team) {
-        const newName = prompt('Ingrese el nuevo nombre del equipo:', team.name);
-        const newWod1 = prompt('Ingrese el puntaje de WOD 1:', team.wod1);
-        const newWod2 = prompt('Ingrese el puntaje de WOD 2:', team.wod2);
-        const newFinal = prompt('Ingrese el puntaje de la Final:', team.final);
-        if (newName !== null && newWod1 !== null && newWod2 !== null && newFinal !== null) {
-            team.name = newName;
-            team.wod1 = parseInt(newWod1);
-            team.wod2 = parseInt(newWod2);
-            team.final = parseInt(newFinal);
-            saveTeams();
-            updateTables();
-        }
-    }
-}
-
-confirmChangesBtn.onclick = function() {
-    isLoggedIn = false;
-    adminPanel.classList.add('hidden');
-    document.querySelectorAll('.admin-col').forEach(col => col.style.display = 'none');
-
-    // Eliminar el botón "Limpiar Datos"
-    if (clearDataBtn.parentNode) {
-        adminPanel.removeChild(clearDataBtn);
-    }
-
-    updateTables();
-}
-
-updateTables();
+// Cargar datos al iniciar
+cargarTabla();

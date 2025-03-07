@@ -1,72 +1,149 @@
 <!DOCTYPE html>
-<html>
+<html lang="es">
 <head>
-    <title>Gestión de Competición CrossFit</title>
-    <link rel="stylesheet" href="style.css">
     <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Competencia CrossFit</title>
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet">
+    <link rel="stylesheet" href="style.css">
 </head>
 <body>
-    <div class="container">
-        <h1>Tabla de Posiciones</h1>
-        <div class="login-container">
-            <button id="login-btn">Iniciar Sesión</button>
+    <div class="container" id="container" style="margin-top: 27%;">
+        <h2 id="titulo" class="text-center mb-4">Tabla de Posiciones</h2>
+
+        <div class="text-center mb-4">
+            <button class="btn btn-neon" id="btn-principiantes">PRINCIPIANTES</button>
+            <button class="btn btn-neon" id="btn-avanzados">AVANZADOS</button>
         </div>
 
-        <div id="login-modal" class="modal">
-            <div class="modal-content">
-                <span class="close">&times;</span>
-                <h2>Iniciar Sesión</h2>
-                <input type="text" id="username" placeholder="Usuario">
-                <input type="password" id="password" placeholder="Contraseña">
-                <button id="login-submit">Iniciar Sesión</button>
-                <p id="login-error" class="error"></p>
+        <div class="row">
+            <div class="col-12 tabla-principiantes" style="display: none;">
+                <div class="tabla-contenedor">
+                    <table class="table table-bordered">
+                        <thead>
+                            <tr>
+                                <th>P</th>
+                                <th>Equipo</th>
+                                <th>W1</th>
+                                <th>W2</th>
+                                <th>Final</th>
+                                <th>Total</th>
+                                <th>Editar</th>
+                            </tr>
+                        </thead>
+                        <tbody id="tabla-principiantes"></tbody>
+                    </table>
+                </div>
+            </div>
+
+            <div class="col-12 tabla-avanzados" style="display: none;">
+                <div class="tabla-contenedor">
+                    <table class="table table-bordered">
+                        <thead>
+                            <tr>
+                                <th>P</th>
+                                <th>Equipo</th>
+                                <th>W1</th>
+                                <th>W2</th>
+                                <th>Final</th>
+                                <th>Total</th>
+                                <th>Editar</th>
+                            </tr>
+                        </thead>
+                        <tbody id="tabla-avanzados"></tbody>
+                    </table>
+                </div>
             </div>
         </div>
-
-        <div id="admin-panel" class="hidden">
-            <h2>Panel de Administrador</h2>
-            <input type="text" id="team-name" placeholder="Nombre del Equipo">
-            <select id="team-category">
-                <option value="Principiante">Principiante</option>
-                <option value="Avanzado">Avanzado</option>
-            </select>
-            <button id="add-team">Agregar Equipo</button>
-            <button id="confirm-changes">Confirmar Cambios</button>
-        </div>
-
-        <h2>Principiantes</h2>
-        <table id="beginner-table">
-            <thead>
-                <tr>
-                    <th>Posición</th>
-                    <th>Equipo</th>
-                    <th>WOD 1</th>
-                    <th>WOD 2</th>
-                    <th>FINAL</th>
-                    <th>TOTAL</th>
-                    <th class="admin-col hidden">Acciones</th>
-                </tr>
-            </thead>
-            <tbody></tbody>
-        </table>
-
-        <h2>Avanzados</h2>
-        <table id="advanced-table">
-            <thead>
-                <tr>
-                    <th>Posición</th>
-                    <th>Equipo</th>
-                    <th>WOD 1</th>
-                    <th>WOD 2</th>
-                    <th>FINAL</th>
-                    <th>TOTAL</th>
-                    <th class="admin-col hidden">Acciones</th>
-                </tr>
-            </thead>
-            <tbody></tbody>
-        </table>
     </div>
 
-    <script src="script.js"></script>
+    <script type="module">
+        import { initializeApp } from "https://www.gstatic.com/firebasejs/10.7.1/firebase-app.js";
+        import { getFirestore, collection, getDocs, doc, updateDoc } from "https://www.gstatic.com/firebasejs/10.7.1/firebase-firestore.js";
+
+        const firebaseConfig = {
+            apiKey: "API_KEY",
+            authDomain: "compebe-7efe6.firebaseapp.com",
+            projectId: "compebe-7efe6",
+            storageBucket: "compebe-7efe6.appspot.com",
+            messagingSenderId: "995708963765",
+            appId: "1:995708963765:web:8701fa19936d57558ea7fc"
+        };
+
+        const app = initializeApp(firebaseConfig);
+        const db = getFirestore(app);
+
+        window.onload = function() {
+            document.querySelector('.tabla-principiantes').style.display = 'none';
+            document.querySelector('.tabla-avanzados').style.display = 'none';
+            
+            document.getElementById('btn-principiantes').addEventListener('click', async () => {
+                document.querySelector('h2').style.display = 'none';
+                document.querySelector('.tabla-principiantes').style.display = 'block';
+                document.querySelector('.tabla-avanzados').style.display = 'none';
+
+                document.getElementById('btn-principiantes').classList.add('active');
+                document.getElementById('btn-avanzados').classList.remove('active');
+
+                const snapshot = await getDocs(collection(db, "principiantes"));
+                mostrarTabla("tabla-principiantes", snapshot, "principiantes");
+            });
+
+            document.getElementById('btn-avanzados').addEventListener('click', async () => {
+                document.querySelector('h2').style.display = 'none';
+                document.querySelector('.tabla-avanzados').style.display = 'block';
+                document.querySelector('.tabla-principiantes').style.display = 'none';
+
+                document.getElementById('btn-avanzados').classList.add('active');
+                document.getElementById('btn-principiantes').classList.remove('active');
+
+                const snapshot = await getDocs(collection(db, "avanzados"));
+                mostrarTabla("tabla-avanzados", snapshot, "avanzados");
+            });
+        };
+
+        function mostrarTabla(idTabla, snapshot, categoria) {
+            const tbody = document.getElementById(idTabla);
+            tbody.innerHTML = "";
+
+            let equipos = snapshot.docs.map(doc => ({ id: doc.id, ...doc.data() }));
+            equipos.sort((a, b) => b.total - a.total);
+
+            equipos.forEach((equipo, index) => {
+                const fila = `
+                    <tr>
+                        <td>${index + 1}</td>
+                        <td>${equipo.nombre}</td>
+                        <td contenteditable="true" data-id="${equipo.id}" data-field="wod1">${equipo.wod1}</td>
+                        <td contenteditable="true" data-id="${equipo.id}" data-field="wod2">${equipo.wod2}</td>
+                        <td contenteditable="true" data-id="${equipo.id}" data-field="final">${equipo.final}</td>
+                        <td>${equipo.total}</td>
+                        <td><button class="btn btn-success btn-sm guardar" data-id="${equipo.id}" data-categoria="${categoria}" data-tabla="${idTabla}">Guardar</button></td>
+                    </tr>
+                `;
+                tbody.innerHTML += fila;
+            });
+
+            document.querySelectorAll(".guardar").forEach(button => {
+                button.addEventListener("click", async (e) => {
+                    const equipoId = e.target.dataset.id;
+                    const categoria = e.target.dataset.categoria;
+                    const idTabla = e.target.dataset.tabla;
+                    const row = e.target.closest("tr");
+
+                    const wod1 = parseInt(row.querySelector(`[data-id="${equipoId}"][data-field="wod1"]`).innerText) || 0;
+                    const wod2 = parseInt(row.querySelector(`[data-id="${equipoId}"][data-field="wod2"]`).innerText) || 0;
+                    const final = parseInt(row.querySelector(`[data-id="${equipoId}"][data-field="final"]`).innerText) || 0;
+                    const total = wod1 + wod2 + final;
+
+                    const equipoRef = doc(db, categoria, equipoId);
+                    await updateDoc(equipoRef, { wod1, wod2, final, total });
+
+                    const snapshot = await getDocs(collection(db, categoria));
+                    mostrarTabla(idTabla, snapshot, categoria);
+                });
+            });
+        }
+    </script>
 </body>
 </html>

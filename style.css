@@ -1,76 +1,87 @@
 body {
-    font-family: sans-serif;
-    margin: 0;
-    padding: 20px;
+    background-image: url("BE.png"); 
+    background-size: cover; /* Esto asegura que la imagen cubra toda la pantalla */
+    background-position: center; /* Centra la imagen en la pantalla */
+    background-repeat: no-repeat;
+    background-attachment: fixed;
+    color: white;
+    font-family: 'Poppins', sans-serif;
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    height: 100vh; /* Asegura que el body ocupe toda la altura de la pantalla */
+    margin: 0; /* Elimina el margen por defecto */
+    overflow: hidden; /* Evita que el contenido se desborde */
 }
 
-.container {
-    max-width: 800px;
-    margin: 0 auto;
+h2 {
+    font-family: 'Anton', sans-serif;
+    color: #BFFF00;
+    text-transform: uppercase;
 }
 
-table {
-    width: 100%;
-    border-collapse: collapse;
-    margin-bottom: 20px;
+.tabla-contenedor {
+    max-height: 400px; /* Ajusta según lo que necesites */
+    overflow-y: auto; /* Permite el desplazamiento vertical */
+    margin-top: 10px; /* Ajusta el margen superior si es necesario */
+}
+.table {
+    background-color: #1E1E1E;
+    color: white;
+    border: 2px solid #BFFF00; /* Borde externo */
+    border-collapse: collapse;  /* Para bordes internos */
 }
 
 th, td {
-    border: 1px solid #ddd;
-    padding: 8px;
-    text-align: left;
+    text-align: center;
+    border: 3px solid #BFFF00;  /* Aumentar grosor de los bordes internos */
+    padding: 10px;  /* Para dar más espacio entre el contenido y los bordes */
 }
 
-th {
-    background-color: #f2f2f2;
+
+
+button {
+    background: none;
+    border: 2px solid #BFFF00;
+    color: white;
+    padding: 10px;
+    text-transform: uppercase;
+    transition: all 0.3s ease;
 }
 
-.modal {
-    display: none;
-    position: fixed;
-    z-index: 1;
-    left: 0;
-    top: 0;
-    width: 100%;
-    height: 100%;
-    overflow: auto;
-    background-color: rgba(0, 0, 0, 0.4);
-}
-
-.modal-content {
-    background-color: #fefefe;
-    margin: 15% auto;
-    padding: 20px;
-    border: 1px solid #888;
-    width: 300px;
-}
-
-.close {
-    color: #aaa;
-    float: right;
-    font-size: 28px;
-    font-weight: bold;
-}
-
-.close:hover,
-.close:focus {
+button:hover {
+    background-color: transparent;
     color: black;
-    text-decoration: none;
-    cursor: pointer;
 }
 
-.hidden {
-    display: none;
+button.active {
+    background: none;
+    border: 2px solid white;
 }
 
-.error {
-    color: red;
+
+/* Estilo para botones con fondo verde neón */
+.btn-neon {
+    background-color: #BFFF00; /* Verde neón */
+    color: black;
+    border: none;
+    padding: 10px 20px;
+    font-size: 1rem;
+    font-weight: bold;
+    transition: background-color 0.3s ease;
 }
 
-.login-container {
-    text-align: right;
+.btn-neon:hover {
+    background-color: #BFFF00;
 }
 
-.admin-col {
-    display: none;
+/* Diseño responsivo */
+@media (max-width: 768px) {
+    .table {
+        font-size: 0.9rem;
+    }
+    button {
+        font-size: 0.8rem;
+        padding: 8px 16px;
+    }
 }
